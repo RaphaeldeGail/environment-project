@@ -11,7 +11,7 @@ output "project_id" {
 output "apis" {
   value = [for api in var.apis : {
     name          = api.name
-    service_agent = api.service_agent ? { email = replace(api.service_agent.email, "PROJECT-NUMBER", google_project.environment_project.number), role = api.service_agent.role } : null
+    service_agent = contains(api, "service_agent") ? { email = replace(api.service_agent.email, "PROJECT-NUMBER", google_project.environment_project.number), role = api.service_agent.role } : null
   }]
   description = "The effective APIs enabled for the environment project."
 }
