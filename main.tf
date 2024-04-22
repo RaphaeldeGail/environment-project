@@ -80,9 +80,9 @@ resource "google_project_service" "service" {
 resource "google_project_service_identity" "service_agent" {
   provider = google-beta
 
-  for_each = local.agent_apis
+  #for_each = local.agent_apis
   project  = google_project.environment_project.project_id
-  service  = each.value
+  service  = "compute.googleapis.com" #each.value
 }
 
 data "google_iam_policy" "project_policy" {
@@ -95,7 +95,7 @@ data "google_iam_policy" "project_policy" {
   binding {
     role = "roles/editor"
     members = [
-        google_project_service_identity.service_agent["compute.googleapis.com"].email
+        "serviceAccount:${google_project_service_identity.service_agent.email}"
       ]
   }
 
