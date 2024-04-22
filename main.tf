@@ -21,6 +21,8 @@ terraform {
 
 locals {
   apis = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
+
+  bindings = setunion(var.bindings, [for api in var.apis : {role = api.service_agent.role, members = [replace("serviceAccount:${api.service_agent.email}", "PROJECT-NUMBER", google_project.environment_project.number)]} if api.service_agent != null ])
 }
 
 resource "random_string" "random" {
@@ -78,17 +80,8 @@ data "google_iam_policy" "project_policy" {
     ]
   }
 
-  # Bindings from service agents declaration
   dynamic "binding" {
-    for_each = var.apis
-    content {
-      role    = binding.value.service_agent != null ? binding.value.service_agent.role : null
-      members = binding.value.service_agent != null ? [join(":", ["serviceAccount", replace(binding.value.service_agent.email, "PROJECT-NUMBER", google_project.environment_project.number)])] : null
-    }
-  }
-  # Bindings from user-based declaration
-  dynamic "binding" {
-    for_each = var.bindings
+    for_each = local.bindings
     content {
       role    = binding.value.role
       members = binding.value.members
