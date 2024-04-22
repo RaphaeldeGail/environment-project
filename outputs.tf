@@ -7,7 +7,3 @@ output "project_id" {
   value       = google_project.environment_project.project_id
   description = "The ID of the environment project created."
 }
-
-output "test" {
-  value = google_project_service_identity.service_agent
-}

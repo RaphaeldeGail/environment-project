@@ -13,7 +13,7 @@ terraform {
       version = "~> 5.21.0"
     }
     google-beta = {
-      source  = "hashicorp/google-beta"
+      source = "hashicorp/google-beta"
       version = "~> 5.25.0"
     }
     random = {
@@ -23,11 +23,10 @@ terraform {
   }
 }
 
-
 locals {
   apis = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
 
-  agent_apis = toset([ for api in var.apis : api.name if api.role != null ])
+  service_agent = {for api in var.apis: api.name => api.role if api.role != null}
 }
 
 resource "random_string" "random" {
@@ -80,9 +79,9 @@ resource "google_project_service" "service" {
 resource "google_project_service_identity" "service_agent" {
   provider = google-beta
 
-  #for_each = local.agent_apis
-  project  = google_project.environment_project.project_id
-  service  = "compute.googleapis.com" #each.value
+  for_each = local.service_agent
+  project = google_project.environment_project.project_id
+  service = each.key
 }
 
 data "google_iam_policy" "project_policy" {
@@ -92,13 +91,16 @@ data "google_iam_policy" "project_policy" {
       "serviceAccount:${google_project.environment_project.number}@cloudservices.gserviceaccount.com",
     ]
   }
-  binding {
-    role = "roles/editor"
-    members = [
-        "serviceAccount:${google_project_service_identity.service_agent.email}"
-      ]
-  }
 
+  dynamic "binding" {
+    for_each = local.service_agent
+    content {
+      role = binding.value
+      members = [
+          "serviceAccount:${google_project_service_identity.service_agent[binding.key].email}"
+        ]
+    }
+  }
   dynamic "binding" {
     for_each = var.bindings
     content {
