@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 5.21.0"
     }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 5.25.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = "~> 3.6.0"
@@ -21,10 +25,9 @@ terraform {
 
 
 locals {
-  apis = toset([
-    "iam.googleapis.com",
-    "compute.googleapis.com"
-  ])
+  apis = setunion(var.apis, [{ name = "iam.googleapis.com" }])
+
+  agent_apis = [for api in var.apis : { name = api.name, role = api.role } if api.role != null]
 }
 
 resource "random_string" "random" {
@@ -59,7 +62,7 @@ resource "google_project_service" "service" {
   for_each = local.apis
   project  = google_project.environment_project.project_id
 
-  service = each.key
+  service = each.value.name
 
   timeouts {
     create = "30m"
@@ -74,17 +77,47 @@ resource "google_project_service" "service" {
   ]
 }
 
-resource "google_project_iam_binding" "instance_admins" {
-  project = google_project.environment_project.project_id
-  role    = "roles/compute.instanceAdmin.v1"
+resource "google_project_service_identity" "service_agent" {
+  provider = google-beta
 
-  members = [
-    "group:${var.exec_group}",
-    "serviceAccount:service-${google_project.environment_project.number}@compute-system.iam.gserviceaccount.com"
-  ]
+  for_each = local.agent_apis
+  project  = google_project.environment_project.project_id
+  service  = each.value.name
+}
+
+data "google_iam_policy" "project_policy" {
+  binding {
+    role = "roles/editor"
+    members = [
+      "serviceAccount:${google_project.environment_project.number}@cloudservices.gserviceaccount.com",
+    ]
+  }
+  dynamic "binding" {
+    for_each = local.agent_apis
+    content {
+      role = binding.value.role
+      members = [
+        "serviceAccount:${google_project_service_identity.service_agent[binding.value.name].email}"
+      ]
+    }
+  }
+
+  dynamic "binding" {
+    for_each = var.bindings
+    content {
+      role    = binding.value.role
+      members = binding.value.members
+    }
+  }
+}
+
+resource "google_project_iam_policy" "instance_admins" {
+  project     = google_project.environment_project.project_id
+  policy_data = data.google_iam_policy.project_policy.policy_data
 
   depends_on = [
-    google_project_service.service["iam.googleapis.com"]
+    google_project_service.service["iam.googleapis.com"],
+    google_project_service.service["compute.googleapis.com"]
   ]
 }
 
@@ -92,6 +125,10 @@ resource "google_kms_crypto_key_iam_member" "crypto_compute" {
   crypto_key_id = var.kms_key
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   member        = "serviceAccount:service-${google_project.environment_project.number}@compute-system.iam.gserviceaccount.com"
+
+  depends_on = [
+    google_project_service.service["compute.googleapis.com"]
+  ]
 }
 
 data "google_compute_zones" "available" {
