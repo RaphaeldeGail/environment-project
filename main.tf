@@ -27,7 +27,7 @@ terraform {
 locals {
   apis = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
 
-  agent_apis = [ for api in var.apis : api.name if api.role != null ]
+  agent_apis = toset([ for api in var.apis : api.name if api.role != null ])
 }
 
 resource "random_string" "random" {
