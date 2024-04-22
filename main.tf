@@ -97,7 +97,7 @@ data "google_iam_policy" "project_policy" {
     content {
       role = binding.value
       members = [
-        "serviceAccount:${google_project_service_identity.service_agent[binding.key]}"
+        "serviceAccount:${google_project_service_identity.service_agent}"
       ]
     }
   }
