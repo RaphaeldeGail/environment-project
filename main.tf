@@ -82,8 +82,8 @@ data "google_iam_policy" "project_policy" {
   dynamic "binding" {
     for_each = var.apis
     content {
-      role    = contains(binding.value, "service_agent") ? binding.value.service_agent.role : null
-      members = contains(binding.value, "service_agent") ? [join(":", ["serviceAccount", replace(binding.value.service_agent.email, "PROJECT-NUMBER", google_project.environment_project.number)])] : null
+      role    = binding.value.service_agent != null ? binding.value.service_agent.role : null
+      members = binding.value.service_agent != null ? [join(":", ["serviceAccount", replace(binding.value.service_agent.email, "PROJECT-NUMBER", google_project.environment_project.number)])] : null
     }
   }
   # Bindings from user-based declaration
