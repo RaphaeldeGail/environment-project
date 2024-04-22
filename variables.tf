@@ -6,7 +6,7 @@ variable "name" {
 
 variable "folder" {
   type        = number
-  description = "The ID of the Workspace Folder."
+  description = "The ID of the Workspace folder."
   nullable    = false
 }
 
@@ -19,9 +19,12 @@ variable "billing_account" {
 variable "apis" {
   type = set(object({
     name = string
-    role = optional(string)
+    service_agent = optional(object({
+      email = string
+      role  = string
+    }))
   }))
-  description = "A set of APIs to enable in the project. If the API has a service agent, a role can be specified."
+  description = "A set of APIs to enable in the environment project. If the API has a service agent, a role and email can be specified."
   nullable    = true
 }
 
@@ -30,7 +33,7 @@ variable "bindings" {
     role    = string
     members = list(string)
   }))
-  description = "The IAM policy bindings for the project."
+  description = "The IAM policy bindings for the environment project."
   nullable    = true
 }
 
