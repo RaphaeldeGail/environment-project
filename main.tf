@@ -25,9 +25,9 @@ terraform {
 
 
 locals {
-  apis = setunion(var.apis, [{ name = "iam.googleapis.com" }])
+  apis = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
 
-  agent_apis = [for api in var.apis : { name = api.name, role = api.role } if api.role != null]
+  agent_apis = { for api in var.apis : api.name => api.role if api.role != null }
 }
 
 resource "random_string" "random" {
@@ -62,7 +62,7 @@ resource "google_project_service" "service" {
   for_each = local.apis
   project  = google_project.environment_project.project_id
 
-  service = each.value.name
+  service = each.key
 
   timeouts {
     create = "30m"
@@ -82,7 +82,7 @@ resource "google_project_service_identity" "service_agent" {
 
   for_each = local.agent_apis
   project  = google_project.environment_project.project_id
-  service  = each.value.name
+  service  = each.key
 }
 
 data "google_iam_policy" "project_policy" {
@@ -95,9 +95,9 @@ data "google_iam_policy" "project_policy" {
   dynamic "binding" {
     for_each = local.agent_apis
     content {
-      role = binding.value.role
+      role = binding.value
       members = [
-        "serviceAccount:${google_project_service_identity.service_agent[binding.value.name].email}"
+        "serviceAccount:${google_project_service_identity.service_agent[binding.key].email}"
       ]
     }
   }
