@@ -22,7 +22,7 @@ terraform {
 locals {
   apis = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
 
-  bindings = setunion(var.bindings, [for api in var.apis : {role = api.service_agent.role, members = [replace("serviceAccount:${api.service_agent.email}", "PROJECT-NUMBER", google_project.environment_project.number)]} if api.service_agent != null ])
+  bindings = setunion(var.bindings, [for api in var.apis : {role = api.service_agent.role, members = [replace("serviceAccount:${api.service_agent.email}", "PROJECT_NUMBER", google_project.environment_project.number)]} if api.service_agent != null ])
 }
 
 resource "random_string" "random" {
