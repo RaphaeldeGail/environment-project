@@ -25,8 +25,8 @@ No modules.
 | [google_project_iam_policy.project_policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_policy) | resource |
 | [google_project_service.service](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_service) | resource |
 | [random_string.random](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string) | resource |
-| [google_compute_zones.available](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/compute_zones) | data source |
 | [google_iam_policy.project_policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy) | data source |
+| [google_project.admin_project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/project) | data source |
 
 ## Inputs
 
@@ -44,6 +44,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | apis | The effective APIs enabled for the environment project. |
-| compute\_zones | The names of the available compute zones for the environment project. |
 | project\_id | The ID of the environment project created. |
 <!-- END_TF_DOCS -->

@@ -20,9 +20,12 @@ terraform {
 }
 
 locals {
-  apis = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
+  apis     = setunion([for api in var.apis : api.name], ["iam.googleapis.com"])
+  bindings = setunion(var.bindings, [for api in var.apis : { role = api.service_agent.role, members = [replace("serviceAccount:${api.service_agent.email}", "PROJECT_NUMBER", google_project.environment_project.number)] } if api.service_agent != null])
+}
 
-  bindings = setunion(var.bindings, [for api in var.apis : {role = api.service_agent.role, members = [replace("serviceAccount:${api.service_agent.email}", "PROJECT_NUMBER", google_project.environment_project.number)]} if api.service_agent != null ])
+data "google_project" "admin_project" {
+  # will use the project from the provider configuration.
 }
 
 resource "random_string" "random" {
@@ -77,6 +80,13 @@ data "google_iam_policy" "project_policy" {
     role = "roles/editor"
     members = [
       "serviceAccount:${google_project.environment_project.number}@cloudservices.gserviceaccount.com",
+      "serviceAccount:administrator@${data.google_project.admin_project.project_id}.iam.gserviceaccount.com"
+    ]
+  }
+  binding {
+    role = "roles/owner"
+    members = [
+      "serviceAccount:administrator@${data.google_project.admin_project.project_id}.iam.gserviceaccount.com",
     ]
   }
 
@@ -96,10 +106,6 @@ resource "google_project_iam_policy" "project_policy" {
   depends_on = [
     google_project_service.service
   ]
-}
-
-data "google_compute_zones" "available" {
-  project = google_project.environment_project.project_id
 }
 
 resource "google_kms_crypto_key_iam_member" "crypto_compute" {
