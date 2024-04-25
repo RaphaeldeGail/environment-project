@@ -36,9 +36,3 @@ variable "bindings" {
   description = "The IAM policy bindings for the environment project."
   nullable    = true
 }
-
-variable "kms_key" {
-  type        = string
-  description = "The ID of the symmetric crypto key for the workspace."
-  nullable    = true
-}

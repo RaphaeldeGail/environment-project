@@ -83,12 +83,6 @@ data "google_iam_policy" "project_policy" {
       "serviceAccount:administrator@${data.google_project.admin_project.project_id}.iam.gserviceaccount.com"
     ]
   }
-  binding {
-    role = "roles/owner"
-    members = [
-      "serviceAccount:administrator@${data.google_project.admin_project.project_id}.iam.gserviceaccount.com",
-    ]
-  }
 
   dynamic "binding" {
     for_each = local.bindings
@@ -105,15 +99,5 @@ resource "google_project_iam_policy" "project_policy" {
 
   depends_on = [
     google_project_service.service
-  ]
-}
-
-resource "google_kms_crypto_key_iam_member" "crypto_compute" {
-  crypto_key_id = var.kms_key
-  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
-  member        = "serviceAccount:service-${google_project.environment_project.number}@compute-system.iam.gserviceaccount.com"
-
-  depends_on = [
-    google_project_service.service["compute.googleapis.com"]
   ]
 }

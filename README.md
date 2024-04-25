@@ -20,7 +20,6 @@ No modules.
 | Name | Type |
 |------|------|
 | [google_billing_project_info.billing_association](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/billing_project_info) | resource |
-| [google_kms_crypto_key_iam_member.crypto_compute](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/kms_crypto_key_iam_member) | resource |
 | [google_project.environment_project](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project) | resource |
 | [google_project_iam_policy.project_policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_policy) | resource |
 | [google_project_service.service](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_service) | resource |
@@ -36,7 +35,6 @@ No modules.
 | billing\_account | The ID of the billing account used for the workspace. "Billing account User" permissions are required to execute module. | `string` | n/a |
 | bindings | The IAM policy bindings for the environment project. | ```list(object({ role = string members = list(string) }))``` | n/a |
 | folder | The ID of the Workspace folder. | `number` | n/a |
-| kms\_key | The ID of the symmetric crypto key for the workspace. | `string` | n/a |
 | name | The name of the environment project. | `string` | n/a |
 
 ## Outputs
@@ -45,4 +43,5 @@ No modules.
 |------|-------------|
 | apis | The effective APIs enabled for the environment project. |
 | project\_id | The ID of the environment project created. |
+| project\_number | The identifying number for the environment project created. |
 <!-- END_TF_DOCS -->

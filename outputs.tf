@@ -3,6 +3,11 @@ output "project_id" {
   description = "The ID of the environment project created."
 }
 
+output "project_number" {
+  value       = google_project.environment_project.number
+  description = "The identifying number for the environment project created."
+}
+
 output "apis" {
   value = [for api in var.apis : {
     name          = api.name
